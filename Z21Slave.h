@@ -10,13 +10,11 @@
 #ifndef Z21_SLAVE_H
 #define Z21_SLAVE_H
 
-#include "Event.h"
 #include <Arduino.h>
 
 // include types & constants of Wiring core API
 #define Z21_SLAVE_BUFFER_TX_SIZE 30 /* Buffer size transmit buffer. */
 #define Z21_SLAVE_COMMAND_BUFFER_SIZE 3
-#define Z21_SLAVE_EVENT_MANAGER_NAME_SIZE 4
 
 /**
  * Typedef for call back function of Z21Lan process commands table.
@@ -27,9 +25,9 @@ class Z21Slave
 {
 public:
     /**
-     * Enum for event data.
+     * Type of received data.
      */
-    enum EventData
+    enum dataType
     {
         none = 0,
         trackPowerOn,
@@ -37,7 +35,6 @@ public:
         locinfo,
         lanVersionResponse,
         fwVersionInfoResponse,
-        txDataPresent,
         unknown
     };
 
@@ -100,7 +97,6 @@ public:
     {
         uint8_t CommandBytes[Z21_SLAVE_COMMAND_BUFFER_SIZE];
         uint8_t CommandBytesSize;
-        EventData Request;
         TZ21LanProcessCommandHandler* FunctionPtr;
     } ProcessCommandsTable;
 
@@ -110,19 +106,19 @@ public:
     Z21Slave();
 
     /**
-     * Set event manager destination.
-     */
-    void SetEventDestination(EventManager EventMngr, const char* EventMngDestStr, uint16_t NameStrSize);
-
-    /**
      * Process received data.
      */
-    bool ProcesDataRx(const uint8_t* DataRxPtr, const uint16_t DataRxLength);
+    Z21Slave::dataType ProcesDataRx(const uint8_t* DataRxPtr, const uint16_t DataRxLength);
 
     /**
      * Get data to be transmitted.
      */
     uint8_t* GetDataTx();
+
+    /**
+     * Check if Tx data is present.
+     */
+    bool txDataPresent();
 
     /**
      * 2.1 LAN_GET_SERIAL_NUMBER
@@ -203,12 +199,8 @@ private:
     const uint8_t SpeedStep28TableFromDcc[32] = { 0, 0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 0, 0, 2, 4,
         6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28 };
 
-    Event m_z21Event;                                          /* Event for event manager*/
-    locInfo m_locInfo;                                         /* Actual received locinfo. */
-    bool m_evtManagerSet;                                      /* Event manger set yes / no */
-    EventManager m_evtManager;                                 /* Event manager */
-    char m_EventMngDestStr[Z21_SLAVE_EVENT_MANAGER_NAME_SIZE]; /* Event manager
-                                                                  source. */
+    locInfo m_locInfo; /* Actual received locinfo. */
+    bool m_txDataPresent;
 
     /**
      * Compose the data to be transmitted.
@@ -217,37 +209,32 @@ private:
     /**
      * Decode the received data.
      */
-    void DecodeRxMessage(const uint8_t* RxData, uint16_t RxLength);
+    dataType DecodeRxMessage(const uint8_t* RxData, uint16_t RxLength);
 
     /**
      * Decode the status message.
      */
-    void Status(const uint8_t* RxData);
+    dataType Status(const uint8_t* RxData);
 
     /**
-     * Decoder the status mesage for trackpower.
+     * Decoder the status message for track power.
      */
-    void TrackPower(const uint8_t* RxData);
+    dataType TrackPower(const uint8_t* RxData);
 
     /**
      * Compose the version info.
      */
-    void GetFirmwareInfo(const uint8_t* RxData);
+    dataType GetFirmwareInfo(const uint8_t* RxData);
 
     /**
      * Get the version.
      */
-    void GetVersion(const uint8_t* RxData);
+    dataType GetVersion(const uint8_t* RxData);
 
     /**
      * Decode the received loc info message.
      */
-    void ProcessGetLocInfo(const uint8_t* RxData);
-
-    /**
-     * Sent event to application/
-     */
-    void EventSend(EventData Data);
+    dataType ProcessGetLocInfo(const uint8_t* RxData);
 
     /**
      * Convert loc adresses to Z21 format.

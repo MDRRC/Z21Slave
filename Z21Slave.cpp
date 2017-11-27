@@ -13,24 +13,17 @@
 Z21Slave::Z21Slave()
 {
     m_SerialNumber    = 0;
-    m_evtManagerSet   = false;
     m_FirmwareVersion = 0;
     m_XBusVersionInfo = 0;
+    m_txDataPresent   = false;
     memset(m_BufferTx, 0, Z21_SLAVE_BUFFER_TX_SIZE);
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
 
-void Z21Slave::SetEventDestination(EventManager EventMngr, const char* EventMngDestStr, uint16_t NameStrSize)
+Z21Slave::dataType Z21Slave::ProcesDataRx(const uint8_t* DataRxPtr, const uint16_t DataRxLength)
 {
-    m_evtManagerSet = true;
-    m_evtManager    = EventMngr;
-    memcpy(m_EventMngDestStr, EventMngDestStr, NameStrSize);
-}
-
-bool Z21Slave::ProcesDataRx(const uint8_t* DataRxPtr, const uint16_t DataRxLength)
-{
-    bool Result = true;
+    dataType returnValue = none;
 
     // See Anhang A – Befehlsübersicht for the case values.
     switch (DataRxPtr[2])
@@ -47,7 +40,7 @@ bool Z21Slave::ProcesDataRx(const uint8_t* DataRxPtr, const uint16_t DataRxLengt
     case 0x40:
         // Run through list of supported commands, if available handle it and
         // generate event.
-        DecodeRxMessage(DataRxPtr, DataRxLength);
+        returnValue = DecodeRxMessage(DataRxPtr, DataRxLength);
         break;
     case 0x50:
         // LAN_SET_BROADCASTFLAGS
@@ -88,13 +81,20 @@ bool Z21Slave::ProcesDataRx(const uint8_t* DataRxPtr, const uint16_t DataRxLengt
     case 0xA4:
         // LAN_LOCONET_DETECTOR
         break;
-    default: Result = false; break;
+    default: returnValue = none; break;
     }
 
-    return (Result);
+    return (returnValue);
 }
 
 uint8_t* Z21Slave::GetDataTx() { return (m_BufferTx); }
+
+bool Z21Slave::txDataPresent()
+{
+    bool Result     = m_txDataPresent;
+    m_txDataPresent = false;
+    return (Result);
+}
 
 void Z21Slave::LanGetSerialNumber() {}
 
@@ -311,56 +311,65 @@ void Z21Slave::ComposeTxMessage(uint8_t Header, uint8_t* TxDataPtr, uint16_t TxL
         m_BufferTx[4 + TxLength] = Checksum;
     }
 
-    EventSend(txDataPresent);
+    m_txDataPresent = true;
 }
 
-void Z21Slave::DecodeRxMessage(const uint8_t* RxData, uint16_t RxLength)
+Z21Slave::dataType Z21Slave::DecodeRxMessage(const uint8_t* RxData, uint16_t RxLength)
 {
-    RxLength = RxLength;
+    (void)RxLength;
+    Z21Slave::dataType dataReturn = none;
 
     switch (RxData[4])
     {
-    case 0x61: Status(RxData); break;
-    case 0x62: TrackPower(RxData); break;
-    case 0x63: GetVersion(RxData); break;
-    case 0xF3: GetFirmwareInfo(RxData); break;
-    case 0xEF: ProcessGetLocInfo(RxData); break;
+    case 0x61: dataReturn = Status(RxData); break;
+    case 0x62: dataReturn = TrackPower(RxData); break;
+    case 0x63: dataReturn = GetVersion(RxData); break;
+    case 0xF3: dataReturn = GetFirmwareInfo(RxData); break;
+    case 0xEF: dataReturn = ProcessGetLocInfo(RxData); break;
     }
+
+    return (dataReturn);
 }
 
-void Z21Slave::Status(const uint8_t* RxData)
+Z21Slave::dataType Z21Slave::Status(const uint8_t* RxData)
 {
+    Z21Slave::dataType dataReturn = none;
     switch (RxData[5])
     {
-    case 0x00: EventSend(trackPowerOff); break;
-    case 0x01: EventSend(trackPowerOn); break;
-    default: EventSend(unknown); break;
+    case 0x00: dataReturn = trackPowerOff; break;
+    case 0x01: dataReturn = trackPowerOn; break;
+    default: dataReturn = unknown; break;
     }
+
+    return (dataReturn);
 }
-void Z21Slave::TrackPower(const uint8_t* RxData)
+Z21Slave::dataType Z21Slave::TrackPower(const uint8_t* RxData)
 {
+    Z21Slave::dataType dataReturn = none;
+
     switch (RxData[6])
     {
-    case 0x00: EventSend(trackPowerOn); break;
-    case 0x02: EventSend(trackPowerOff); break;
-    case 0xFF: EventSend(trackPowerOff); break;
-    default: EventSend(unknown); break;
+    case 0x00: dataReturn = trackPowerOn; break;
+    case 0x02: dataReturn = trackPowerOff; break;
+    case 0xFF: dataReturn = trackPowerOff; break;
+    default: dataReturn = unknown; break;
     }
+    return (dataReturn);
 }
 
-void Z21Slave::GetFirmwareInfo(const uint8_t* RxData)
+Z21Slave::dataType Z21Slave::GetFirmwareInfo(const uint8_t* RxData)
 {
     m_FirmwareVersion = ((uint16_t)(RxData[6]) << 8) | (uint16_t)(RxData[7]);
-    EventSend(fwVersionInfoResponse);
+    return (fwVersionInfoResponse);
 }
 
-void Z21Slave::GetVersion(const uint8_t* RxData)
+Z21Slave::dataType Z21Slave::GetVersion(const uint8_t* RxData)
 {
     m_XBusVersionInfo = ((uint16_t)(RxData[6]) << 8) | (uint16_t)(RxData[7]);
-    EventSend(lanVersionResponse);
+    return (lanVersionResponse);
 }
 
-void Z21Slave::ProcessGetLocInfo(const uint8_t* RxData)
+Z21Slave::dataType Z21Slave::ProcessGetLocInfo(const uint8_t* RxData)
 {
     uint16_t Address;
 
@@ -417,18 +426,7 @@ void Z21Slave::ProcessGetLocInfo(const uint8_t* RxData)
     m_locInfo.Functions |= (uint32_t)(RxData[11]) << 12;
     m_locInfo.Functions |= (uint32_t)(RxData[12]) << 20;
 
-    EventSend(locinfo);
-}
-
-void Z21Slave::EventSend(EventData Data)
-{
-    m_z21Event.label = m_EventMngDestStr;
-    m_z21Event.extra = (uint16_t)(Data);
-
-    if (m_evtManagerSet == true)
-    {
-        m_evtManager.trigger(m_z21Event);
-    }
+    return (locinfo);
 }
 
 uint16_t Z21Slave::ConvertLocAddressToZ21(uint16_t Address)
