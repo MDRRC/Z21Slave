@@ -371,12 +371,9 @@ Z21Slave::dataType Z21Slave::GetVersion(const uint8_t* RxData)
 
 Z21Slave::dataType Z21Slave::ProcessGetLocInfo(const uint8_t* RxData)
 {
-    uint16_t Address;
 
-    Address = (uint16_t)(RxData[5]) << 8;
-    Address |= RxData[6];
-
-    m_locInfo.Address = ConvertLocAddressFromZ21(Address);
+    m_locInfo.Address = (uint16_t)(RxData[5]) << 8;
+    m_locInfo.Address |= RxData[6];
 
     switch (RxData[7] & 0x07)
     {
