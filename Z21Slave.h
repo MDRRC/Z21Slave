@@ -78,6 +78,16 @@ public:
     };
 
     /**
+     * Turnout direction.
+     */
+    enum turnout
+    {
+        directionOff = 0,
+        directionForward,
+        directionTurn
+    };
+
+    /**
      * Structure with received locotive data.
      */
     struct locInfo
@@ -184,6 +194,11 @@ public:
      * 4.4 LAN_X_LOCO_INFO
      */
     Z21Slave::locInfo* LanXLocoInfo();
+
+    /**
+     * 5.2 LAN_X_SET_TURNOUT
+     */
+    void LanXSetTurnout(uint16_t Address, turnout direction);
 
 private:
     uint8_t m_BufferTx[Z21_SLAVE_BUFFER_TX_SIZE]; /* Transmit buffer. */

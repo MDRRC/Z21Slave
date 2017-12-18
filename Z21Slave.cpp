@@ -266,6 +266,24 @@ void Z21Slave::LanXSetLocoFunction(uint16_t Address, uint8_t Function, functionS
 
 Z21Slave::locInfo* Z21Slave::LanXLocoInfo() { return (&m_locInfo); }
 
+void Z21Slave::LanXSetTurnout(uint16_t Address, turnout direction)
+{
+    uint8_t DataTx[4];
+
+    DataTx[0] = 0x53;
+    DataTx[1] = (Address >> 8) & 0xFF;
+    DataTx[2] = (Address)&0xFF;
+
+    switch (direction)
+    {
+    case directionOff: DataTx[3] = 0x80; break;
+    case directionTurn: DataTx[3] = 0x88; break;
+    case directionForward: DataTx[3] = 0x89; break;
+    }
+
+    ComposeTxMessage(0x40, DataTx, 4, true);
+}
+
 // Private Methods /////////////////////////////////////////////////////////////
 
 void Z21Slave::ComposeTxMessage(uint8_t Header, uint8_t* TxDataPtr, uint16_t TxLength, bool ChecksumCalc)
