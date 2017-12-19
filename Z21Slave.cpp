@@ -1,26 +1,38 @@
-/*
-  Test.h - Test library for Wiring - implementation
-  Copyright (c) 2006 John Doe.  All right reserved.
-*/
+/***********************************************************************************************************************
+   @file   Z21Slave.cpp
+   @brief  Z21 slave implementation.
+ **********************************************************************************************************************/
 
-// include this library's description file
+/***********************************************************************************************************************
+   I N C L U D E S
+ **********************************************************************************************************************/
 #include "Z21Slave.h"
 #include <string.h>
 
-// Constructor /////////////////////////////////////////////////////////////////
-// Function that handles the creation and setup of instances
+/***********************************************************************************************************************
+   F O R W A R D  D E C L A R A T I O N S
+ **********************************************************************************************************************/
+
+/***********************************************************************************************************************
+   D A T A   D E C L A R A T I O N S (exported, local)
+ **********************************************************************************************************************/
+
+/***********************************************************************************************************************
+   C O N S T R U C T O R
+ **********************************************************************************************************************/
 
 Z21Slave::Z21Slave()
 {
-    m_SerialNumber    = 0;
-    m_FirmwareVersion = 0;
-    m_XBusVersionInfo = 0;
-    m_txDataPresent   = false;
+    m_txDataPresent = false;
     memset(m_BufferTx, 0, Z21_SLAVE_BUFFER_TX_SIZE);
 }
 
-// Public Methods //////////////////////////////////////////////////////////////
+/***********************************************************************************************************************
+  F U N C T I O N S
+ **********************************************************************************************************************/
 
+/***********************************************************************************************************************
+ */
 Z21Slave::dataType Z21Slave::ProcesDataRx(const uint8_t* DataRxPtr, const uint16_t DataRxLength)
 {
     dataType returnValue = none;
@@ -38,8 +50,7 @@ Z21Slave::dataType Z21Slave::ProcesDataRx(const uint8_t* DataRxPtr, const uint16
         // LAN_LOGOFF
         break;
     case 0x40:
-        // Run through list of supported commands, if available handle it and
-        // generate event.
+        // Run through list of supported commands.
         returnValue = DecodeRxMessage(DataRxPtr, DataRxLength);
         break;
     case 0x50:
@@ -87,8 +98,12 @@ Z21Slave::dataType Z21Slave::ProcesDataRx(const uint8_t* DataRxPtr, const uint16
     return (returnValue);
 }
 
+/***********************************************************************************************************************
+ */
 uint8_t* Z21Slave::GetDataTx() { return (m_BufferTx); }
 
+/***********************************************************************************************************************
+ */
 bool Z21Slave::txDataPresent()
 {
     bool Result     = m_txDataPresent;
@@ -96,20 +111,8 @@ bool Z21Slave::txDataPresent()
     return (Result);
 }
 
-void Z21Slave::LanGetSerialNumber() {}
-
-void Z21Slave::LanLogOff() {}
-
-void Z21Slave::LanGetVersion()
-{
-    uint8_t DataTx[2];
-
-    DataTx[0] = 0x21;
-    DataTx[1] = 0x21;
-
-    ComposeTxMessage(0x40, DataTx, 2, true);
-}
-
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanGetStatus()
 {
     uint8_t DataTx[2];
@@ -120,6 +123,8 @@ void Z21Slave::LanGetStatus()
     ComposeTxMessage(0x40, DataTx, 2, true);
 }
 
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanSetTrackPowerOff()
 {
     uint8_t DataTx[2];
@@ -130,6 +135,8 @@ void Z21Slave::LanSetTrackPowerOff()
     ComposeTxMessage(0x40, DataTx, 2, true);
 }
 
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanSetTrackPowerOn()
 {
     uint8_t DataTx[2];
@@ -140,16 +147,8 @@ void Z21Slave::LanSetTrackPowerOn()
     ComposeTxMessage(0x40, DataTx, 2, true);
 }
 
-void Z21Slave::LanGetFirmwareVersion()
-{
-    uint8_t DataTx[2];
-
-    DataTx[0] = 0xf1;
-    DataTx[1] = 0x0a;
-
-    ComposeTxMessage(0x40, DataTx, 2, true);
-}
-
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanSetBroadCastFlags(uint32_t Flags)
 {
     uint8_t DataTx[4];
@@ -162,21 +161,8 @@ void Z21Slave::LanSetBroadCastFlags(uint32_t Flags)
     ComposeTxMessage(0x50, DataTx, 4, true);
 }
 
-void Z21Slave::LanGetLocoMode(uint16_t Address)
-{
-    uint8_t DataTx[4];
-    uint16_t AddressLocal;
-
-    AddressLocal = ConvertLocAddressToZ21(Address);
-
-    DataTx[0] = 0x00;
-    DataTx[1] = 0x00;
-    DataTx[2] = (AddressLocal >> 8) & 0xFF;
-    DataTx[3] = (AddressLocal)&0xFF;
-
-    ComposeTxMessage(0x60, DataTx, 4, false);
-}
-
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanXGetLocoInfo(uint16_t Address)
 {
     uint8_t DataTx[4];
@@ -192,7 +178,8 @@ void Z21Slave::LanXGetLocoInfo(uint16_t Address)
     ComposeTxMessage(0x40, DataTx, 4, true);
 }
 
-// 4.2 LAN_X_SET_LOCO_DRIVE
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanXSetLocoDrive(locInfo* LocInfoPtr)
 {
     uint8_t DataTx[5];
@@ -239,7 +226,8 @@ void Z21Slave::LanXSetLocoDrive(locInfo* LocInfoPtr)
     }
 }
 
-// 4.3 LAN_X_SET_LOCO_FUNCTION
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanXSetLocoFunction(uint16_t Address, uint8_t Function, functionSet Set)
 {
     uint8_t DataTx[5];
@@ -264,8 +252,12 @@ void Z21Slave::LanXSetLocoFunction(uint16_t Address, uint8_t Function, functionS
     ComposeTxMessage(0x40, DataTx, 5, true);
 }
 
+/***********************************************************************************************************************
+ */
 Z21Slave::locInfo* Z21Slave::LanXLocoInfo() { return (&m_locInfo); }
 
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanXSetTurnout(uint16_t Address, turnout direction)
 {
     uint8_t DataTx[4];
@@ -284,8 +276,8 @@ void Z21Slave::LanXSetTurnout(uint16_t Address, turnout direction)
     ComposeTxMessage(0x40, DataTx, 4, true);
 }
 
-// Private Methods /////////////////////////////////////////////////////////////
-
+/***********************************************************************************************************************
+ */
 void Z21Slave::ComposeTxMessage(uint8_t Header, uint8_t* TxDataPtr, uint16_t TxLength, bool ChecksumCalc)
 {
     uint16_t Index   = 0;
@@ -332,6 +324,8 @@ void Z21Slave::ComposeTxMessage(uint8_t Header, uint8_t* TxDataPtr, uint16_t TxL
     m_txDataPresent = true;
 }
 
+/***********************************************************************************************************************
+ */
 Z21Slave::dataType Z21Slave::DecodeRxMessage(const uint8_t* RxData, uint16_t RxLength)
 {
     (void)RxLength;
@@ -341,14 +335,16 @@ Z21Slave::dataType Z21Slave::DecodeRxMessage(const uint8_t* RxData, uint16_t RxL
     {
     case 0x61: dataReturn = Status(RxData); break;
     case 0x62: dataReturn = TrackPower(RxData); break;
-    case 0x63: dataReturn = GetVersion(RxData); break;
-    case 0xF3: dataReturn = GetFirmwareInfo(RxData); break;
+    case 0x63: dataReturn = unknown; break;
+    case 0xF3: dataReturn = unknown; break;
     case 0xEF: dataReturn = ProcessGetLocInfo(RxData); break;
     }
 
     return (dataReturn);
 }
 
+/***********************************************************************************************************************
+ */
 Z21Slave::dataType Z21Slave::Status(const uint8_t* RxData)
 {
     Z21Slave::dataType dataReturn = none;
@@ -361,6 +357,9 @@ Z21Slave::dataType Z21Slave::Status(const uint8_t* RxData)
 
     return (dataReturn);
 }
+
+/***********************************************************************************************************************
+ */
 Z21Slave::dataType Z21Slave::TrackPower(const uint8_t* RxData)
 {
     Z21Slave::dataType dataReturn = none;
@@ -375,18 +374,8 @@ Z21Slave::dataType Z21Slave::TrackPower(const uint8_t* RxData)
     return (dataReturn);
 }
 
-Z21Slave::dataType Z21Slave::GetFirmwareInfo(const uint8_t* RxData)
-{
-    m_FirmwareVersion = ((uint16_t)(RxData[6]) << 8) | (uint16_t)(RxData[7]);
-    return (fwVersionInfoResponse);
-}
-
-Z21Slave::dataType Z21Slave::GetVersion(const uint8_t* RxData)
-{
-    m_XBusVersionInfo = ((uint16_t)(RxData[6]) << 8) | (uint16_t)(RxData[7]);
-    return (lanVersionResponse);
-}
-
+/***********************************************************************************************************************
+ */
 Z21Slave::dataType Z21Slave::ProcessGetLocInfo(const uint8_t* RxData)
 {
 
@@ -444,6 +433,8 @@ Z21Slave::dataType Z21Slave::ProcessGetLocInfo(const uint8_t* RxData)
     return (locinfo);
 }
 
+/***********************************************************************************************************************
+ */
 uint16_t Z21Slave::ConvertLocAddressToZ21(uint16_t Address)
 {
     uint16_t AddressLocal = Address;
@@ -455,6 +446,8 @@ uint16_t Z21Slave::ConvertLocAddressToZ21(uint16_t Address)
     return (AddressLocal);
 }
 
+/***********************************************************************************************************************
+ */
 uint16_t Z21Slave::ConvertLocAddressFromZ21(uint16_t Address)
 {
     uint16_t AddressLocal = Address;

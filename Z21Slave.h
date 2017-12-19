@@ -10,17 +10,26 @@
 #ifndef Z21_SLAVE_H
 #define Z21_SLAVE_H
 
+/***********************************************************************************************************************
+ * I N C L U D E S
+ **********************************************************************************************************************/
 #include <Arduino.h>
 
-// include types & constants of Wiring core API
-#define Z21_SLAVE_BUFFER_TX_SIZE 30 /* Buffer size transmit buffer. */
-#define Z21_SLAVE_COMMAND_BUFFER_SIZE 3
+/***********************************************************************************************************************
+ * T Y P E D E F S  /  E N U M
+ **********************************************************************************************************************/
+
+#define Z21_SLAVE_BUFFER_TX_SIZE 30     //!< Buffer size transmit buffer.
+#define Z21_SLAVE_COMMAND_BUFFER_SIZE 3 //!< Command buffer size.
 
 /**
  * Typedef for call back function of Z21Lan process commands table.
  */
 typedef void TZ21LanProcessCommandHandler(const uint8_t* DataRx);
 
+/***********************************************************************************************************************
+ * C L A S S E S
+ **********************************************************************************************************************/
 class Z21Slave
 {
 public:
@@ -131,21 +140,6 @@ public:
     bool txDataPresent();
 
     /**
-     * 2.1 LAN_GET_SERIAL_NUMBER
-     */
-    void LanGetSerialNumber();
-
-    /**
-     * 2.2 LAN_LOGOFF
-     */
-    void LanLogOff();
-
-    /**
-     * 2.3 LAN_X_GET_VERSION
-     */
-    void LanGetVersion();
-
-    /**
      * 2.4 LAN_X_GET_STATUS
      */
     void LanGetStatus();
@@ -161,19 +155,9 @@ public:
     void LanSetTrackPowerOn();
 
     /**
-     * 2.15 LAN_X_GET_FIRMWARE_VERSION
-     */
-    void LanGetFirmwareVersion();
-
-    /**
      * 2.16 LAN_SET_BROADCASTFLAGS
      */
     void LanSetBroadCastFlags(uint32_t Flags);
-
-    /**
-     * 3.1 LAN_GET_LOCOMODE
-     */
-    void LanGetLocoMode(uint16_t Address);
 
     /**
      * 4.1 LAN_X_GET_LOCO_INFO
@@ -202,9 +186,8 @@ public:
 
 private:
     uint8_t m_BufferTx[Z21_SLAVE_BUFFER_TX_SIZE]; /* Transmit buffer. */
-    uint16_t m_FirmwareVersion;                   /* Firmware version of Z21 central. */
-    uint16_t m_XBusVersionInfo;                   /* XBus version info of Z21 central. */
-    uint32_t m_SerialNumber;                      /* Serial number of Z21 central. */
+    locInfo m_locInfo;                            /* Actual received locinfo. */
+    bool m_txDataPresent;                         /* Data present to be transmitted. */
 
     /* Conversion table for normal speed to 28 steps DCC speed. */
     const uint8_t SpeedStep28TableToDcc[29] = { 16, 2, 18, 3, 19, 4, 20, 5, 21, 6, 22, 7, 23, 8, 24, 9, 25, 10, 26, 11,
@@ -214,13 +197,11 @@ private:
     const uint8_t SpeedStep28TableFromDcc[32] = { 0, 0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 0, 0, 2, 4,
         6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28 };
 
-    locInfo m_locInfo; /* Actual received locinfo. */
-    bool m_txDataPresent;
-
     /**
      * Compose the data to be transmitted.
      */
     void ComposeTxMessage(uint8_t Header, uint8_t* TxData, uint16_t TxLength, bool ChecksumCalc);
+
     /**
      * Decode the received data.
      */
