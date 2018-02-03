@@ -352,6 +352,7 @@ Z21Slave::dataType Z21Slave::Status(const uint8_t* RxData)
     {
     case 0x00: dataReturn = trackPowerOff; break;
     case 0x01: dataReturn = trackPowerOn; break;
+    case 0x02: dataReturn = programmingMode; break;
     default: dataReturn = unknown; break;
     }
 
@@ -367,9 +368,8 @@ Z21Slave::dataType Z21Slave::TrackPower(const uint8_t* RxData)
     switch (RxData[6])
     {
     case 0x00: dataReturn = trackPowerOn; break;
-    case 0x02: dataReturn = trackPowerOff; break;
-    case 0xFF: dataReturn = trackPowerOff; break;
-    default: dataReturn = unknown; break;
+    case 0x20: dataReturn = programmingMode; break;
+    default: dataReturn = trackPowerOff; break;
     }
     return (dataReturn);
 }

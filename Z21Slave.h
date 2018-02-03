@@ -41,6 +41,7 @@ public:
         none = 0,
         trackPowerOn,
         trackPowerOff,
+        programmingMode,
         locinfo,
         lanVersionResponse,
         fwVersionInfoResponse,
