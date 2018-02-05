@@ -399,10 +399,6 @@ Z21Slave::dataType Z21Slave::ProcessGetLocInfo(const uint8_t* RxData)
     case 4:
         m_locInfo.Steps = locDecoderSpeedSteps128;
         m_locInfo.Speed = RxData[8] & 0x7F;
-        if (m_locInfo.Speed > 0)
-        {
-            m_locInfo.Speed--;
-        }
         break;
     default: m_locInfo.Steps = locDecoderSpeedStepsUnknown; break;
     }
