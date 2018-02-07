@@ -382,6 +382,14 @@ Z21Slave::dataType Z21Slave::ProcessGetLocInfo(const uint8_t* RxData)
     m_locInfo.Address = (uint16_t)(RxData[5]) << 8;
     m_locInfo.Address |= RxData[6];
 
+    if (m_locInfo.Address > 127)
+    {
+        if ((m_locInfo.Address & 0xC000) == 0xC000)
+        {
+            m_locInfo.Address -= 0xC000;
+        }
+    }
+
     switch (RxData[7] & 0x07)
     {
     case 0:
