@@ -108,6 +108,7 @@ public:
         locDirection Direction;
         locLight Light;
         uint32_t Functions;
+        bool Occupied;
     };
 
     /**

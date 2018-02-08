@@ -411,6 +411,15 @@ Z21Slave::dataType Z21Slave::ProcessGetLocInfo(const uint8_t* RxData)
     default: m_locInfo.Steps = locDecoderSpeedStepsUnknown; break;
     }
 
+    if (RxData[7] & 0x08)
+    {
+        m_locInfo.Occupied = true;
+    }
+    else
+    {
+        m_locInfo.Occupied = false;
+    }
+
     if (RxData[8] & 0x80)
     {
         m_locInfo.Direction = locDirectionForward;
