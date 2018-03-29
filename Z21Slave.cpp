@@ -258,6 +258,10 @@ Z21Slave::locInfo* Z21Slave::LanXLocoInfo() { return (&m_locInfo); }
 
 /***********************************************************************************************************************
  */
+Z21Slave::cvData* Z21Slave::LanXCvResult() { return (&m_CvData); }
+
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanXSetTurnout(uint16_t Address, turnout direction)
 {
     uint8_t DataTx[4];
@@ -278,14 +282,42 @@ void Z21Slave::LanXSetTurnout(uint16_t Address, turnout direction)
 
 /***********************************************************************************************************************
  */
+void Z21Slave::LanCvRead(uint16_t CvNumber)
+{
+    uint8_t DataTx[4];
+
+    DataTx[0] = 0x23;
+    DataTx[1] = 0x11;
+    DataTx[2] = ((CvNumber - 1) >> 8) & 0xFF;
+    DataTx[3] = (CvNumber - 1) & 0xFF;
+
+    ComposeTxMessage(0x40, DataTx, 4, true);
+}
+
+/***********************************************************************************************************************
+ */
+void Z21Slave::LanCvWrite(uint16_t CvNumber, uint8_t CvValue)
+{
+    uint8_t DataTx[5];
+
+    DataTx[0] = 0x24;
+    DataTx[1] = 0x12;
+    DataTx[2] = ((CvNumber - 1) >> 8) & 0xFF;
+    DataTx[3] = (CvNumber - 1) & 0xFF;
+    DataTx[4] = CvValue;
+
+    ComposeTxMessage(0x40, DataTx, 5, true);
+}
+
+/***********************************************************************************************************************
+ */
 void Z21Slave::ComposeTxMessage(uint8_t Header, uint8_t* TxDataPtr, uint16_t TxLength, bool ChecksumCalc)
 {
     uint16_t Index   = 0;
     uint8_t Checksum = 0;
 
-    // Fill DataLen and Header
-    // DataLen is header length + data length + XOR-Byte (if XOR byte is
-    // required).
+    // Fill DataLen and Header.
+    // DataLen is header length + data length + XOR-Byte (if XOR byte is required).
     if (ChecksumCalc == true)
     {
         m_BufferTx[0] = 4 + TxLength + 1;
@@ -336,6 +368,7 @@ Z21Slave::dataType Z21Slave::DecodeRxMessage(const uint8_t* RxData, uint16_t RxL
     case 0x61: dataReturn = Status(RxData); break;
     case 0x62: dataReturn = TrackPower(RxData); break;
     case 0x63: dataReturn = unknown; break;
+    case 0x64: dataReturn = GetCVData(RxData); break;
     case 0xF3: dataReturn = unknown; break;
     case 0xEF: dataReturn = ProcessGetLocInfo(RxData); break;
     }
@@ -353,6 +386,7 @@ Z21Slave::dataType Z21Slave::Status(const uint8_t* RxData)
     case 0x00: dataReturn = trackPowerOff; break;
     case 0x01: dataReturn = trackPowerOn; break;
     case 0x02: dataReturn = programmingMode; break;
+    case 0x13: dataReturn = programmingCvNackSc; break;
     default: dataReturn = unknown; break;
     }
 
@@ -372,6 +406,17 @@ Z21Slave::dataType Z21Slave::TrackPower(const uint8_t* RxData)
     default: dataReturn = trackPowerOff; break;
     }
     return (dataReturn);
+}
+
+/***********************************************************************************************************************
+ */
+Z21Slave::dataType Z21Slave::GetCVData(const uint8_t* RxData)
+{
+    m_CvData.Number = (uint16_t)(RxData[6]) << 8 | (uint16_t)(RxData[7]);
+    m_CvData.Number++;
+    m_CvData.Value = RxData[8];
+
+    return (programmingCvResult);
 }
 
 /***********************************************************************************************************************

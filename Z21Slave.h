@@ -42,6 +42,8 @@ public:
         trackPowerOn,
         trackPowerOff,
         programmingMode,
+        programmingCvNackSc,
+        programmingCvResult,
         locinfo,
         lanVersionResponse,
         fwVersionInfoResponse,
@@ -109,6 +111,15 @@ public:
         locLight Light;
         uint32_t Functions;
         bool Occupied;
+    };
+
+    /**
+     * Structure with received CV data.
+     */
+    struct cvData
+    {
+        uint16_t Number;
+        uint8_t Value;
     };
 
     /**
@@ -182,13 +193,28 @@ public:
     Z21Slave::locInfo* LanXLocoInfo();
 
     /**
+     * 6.5 LAN_X_CV_RESULT
+     */
+    cvData* LanXCvResult();
+    /**
      * 5.2 LAN_X_SET_TURNOUT
      */
     void LanXSetTurnout(uint16_t Address, turnout direction);
 
+    /**
+     * 6.1 LAN_X_CV_READ
+     */
+    void LanCvRead(uint16_t CvNumber);
+
+    /**
+     * 6.2 LAN_X_CV_WRITE
+     */
+    void LanCvWrite(uint16_t CvNumber, uint8_t CvValue);
+
 private:
     uint8_t m_BufferTx[Z21_SLAVE_BUFFER_TX_SIZE]; /* Transmit buffer. */
-    locInfo m_locInfo;                            /* Actual received locinfo. */
+    locInfo m_locInfo;                            /* Actual received loc info. */
+    cvData m_CvData;                              /* Received cv programming data. */
     bool m_txDataPresent;                         /* Data present to be transmitted. */
 
     /* Conversion table for normal speed to 28 steps DCC speed. */
@@ -215,9 +241,14 @@ private:
     dataType Status(const uint8_t* RxData);
 
     /**
-     * Decoder the status message for track power.
+     * Decode the status message for track power.
      */
     dataType TrackPower(const uint8_t* RxData);
+
+    /**
+     * Decode the CV response data.
+     */
+    dataType GetCVData(const uint8_t* RxData);
 
     /**
      * Compose the version info.
