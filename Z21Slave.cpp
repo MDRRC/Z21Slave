@@ -311,6 +311,24 @@ void Z21Slave::LanCvWrite(uint16_t CvNumber, uint8_t CvValue)
 
 /***********************************************************************************************************************
  */
+void Z21Slave::LanXCvPomWriteByte(uint16_t Address, uint16_t CvNumber, uint8_t CvValue)
+{
+    uint8_t DataTx[7];
+
+    DataTx[0] = 0xE6;
+    DataTx[1] = 0x30;
+    DataTx[2] = (Address >> 8) & 0x3f;
+    DataTx[3] = (Address)&0xFF;
+    DataTx[4] = 0xEC;
+    DataTx[4] |= ((CvNumber - 1) >> 8) & 0x03;
+    DataTx[5] = (CvNumber - 1) & 0xFF;
+    DataTx[6] = CvValue;
+
+    ComposeTxMessage(0x40, DataTx, 7, true);
+}
+
+/***********************************************************************************************************************
+ */
 void Z21Slave::ComposeTxMessage(uint8_t Header, uint8_t* TxDataPtr, uint16_t TxLength, bool ChecksumCalc)
 {
     uint16_t Index   = 0;

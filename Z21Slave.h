@@ -211,6 +211,11 @@ public:
      */
     void LanCvWrite(uint16_t CvNumber, uint8_t CvValue);
 
+    /**
+     * 6.6 LAN_X_CV_POM_WRITE_BYTE
+     */
+    void LanXCvPomWriteByte(uint16_t Address, uint16_t CvNumber, uint8_t CvValue);
+
 private:
     uint8_t m_BufferTx[Z21_SLAVE_BUFFER_TX_SIZE]; /* Transmit buffer. */
     locInfo m_locInfo;                            /* Actual received loc info. */
