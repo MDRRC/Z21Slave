@@ -262,6 +262,10 @@ Z21Slave::cvData* Z21Slave::LanXCvResult() { return (&m_CvData); }
 
 /***********************************************************************************************************************
  */
+Z21Slave::locLibData* Z21Slave::LanXLocLibData() { return (&m_locLibData); }
+
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanXSetTurnout(uint16_t Address, turnout direction)
 {
     uint8_t DataTx[4];
@@ -381,17 +385,42 @@ Z21Slave::dataType Z21Slave::DecodeRxMessage(const uint8_t* RxData, uint16_t RxL
     (void)RxLength;
     Z21Slave::dataType dataReturn = none;
 
-    switch (RxData[4])
+    if (RxData[5] == 0xF1)
     {
-    case 0x61: dataReturn = Status(RxData); break;
-    case 0x62: dataReturn = TrackPower(RxData); break;
-    case 0x63: dataReturn = unknown; break;
-    case 0x64: dataReturn = GetCVData(RxData); break;
-    case 0xF3: dataReturn = unknown; break;
-    case 0xEF: dataReturn = ProcessGetLocInfo(RxData); break;
+        if ((RxData[4] >= 0xE6) && (RxData[4] <= 0xEF))
+        {
+            /* Received loc library data, see
+             * https://www.open4me.de/index.php/2017/06/zz21-wlan-maus-lok-bibliothek-befehle/  */
+            dataReturn = ProcessLocLibraryData(RxData);
+        }
+    }
+    else
+    {
+        switch (RxData[4])
+        {
+        case 0x61: dataReturn = Status(RxData); break;
+        case 0x62: dataReturn = TrackPower(RxData); break;
+        case 0x63: dataReturn = unknown; break;
+        case 0x64: dataReturn = GetCVData(RxData); break;
+        case 0xF3: dataReturn = unknown; break;
+        case 0xEF: dataReturn = ProcessGetLocInfo(RxData); break;
+        }
     }
 
     return (dataReturn);
+}
+
+/***********************************************************************************************************************
+ * Locomotive name is skipped (for now).
+ */
+Z21Slave::dataType Z21Slave::ProcessLocLibraryData(const uint8_t* RxData)
+{
+    m_locLibData.Address = (uint16_t)(RxData[6]) << 8;
+    m_locLibData.Address |= RxData[7];
+    m_locLibData.Actual = RxData[8];
+    m_locLibData.Total  = RxData[9];
+
+    return (locLibraryData);
 }
 
 /***********************************************************************************************************************

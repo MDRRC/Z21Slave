@@ -47,6 +47,7 @@ public:
         locinfo,
         lanVersionResponse,
         fwVersionInfoResponse,
+        locLibraryData,
         unknown
     };
 
@@ -120,6 +121,17 @@ public:
     {
         uint16_t Number;
         uint8_t Value;
+    };
+
+    /**
+     * Structure with received loclibrary data.
+     */
+    struct locLibData
+    {
+        uint16_t Address;
+        char NameStr[10];
+        uint16_t Actual;
+        uint16_t Total;
     };
 
     /**
@@ -216,10 +228,16 @@ public:
      */
     void LanXCvPomWriteByte(uint16_t Address, uint16_t CvNumber, uint8_t CvValue);
 
+    /**
+     * x.x LAN_X_LOC_LIB_DATA
+     */
+    locLibData* LanXLocLibData();
+
 private:
     uint8_t m_BufferTx[Z21_SLAVE_BUFFER_TX_SIZE]; /* Transmit buffer. */
     locInfo m_locInfo;                            /* Actual received loc info. */
     cvData m_CvData;                              /* Received cv programming data. */
+    locLibData m_locLibData;                      /* Received loclib data. */
     bool m_txDataPresent;                         /* Data present to be transmitted. */
 
     /* Conversion table for normal speed to 28 steps DCC speed. */
@@ -239,6 +257,11 @@ private:
      * Decode the received data.
      */
     dataType DecodeRxMessage(const uint8_t* RxData, uint16_t RxLength);
+
+    /**
+     * Decoder the locomotive library data.
+     */
+    dataType ProcessLocLibraryData(const uint8_t* RxData);
 
     /**
      * Decode the status message.
