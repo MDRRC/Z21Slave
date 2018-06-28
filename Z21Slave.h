@@ -101,7 +101,7 @@ public:
     };
 
     /**
-     * Structure with received locotive data.
+     * Structure with received locomotive data.
      */
     struct locInfo
     {
