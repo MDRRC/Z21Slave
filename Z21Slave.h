@@ -39,6 +39,7 @@ public:
     enum dataType
     {
         none = 0,
+        emergencyStop,
         trackPowerOn,
         trackPowerOff,
         programmingMode,
@@ -178,6 +179,11 @@ public:
      * 2.6 LAN_X_SET_TRACK_POWER_ON
      */
     void LanSetTrackPowerOn();
+
+    /**
+     * 2.13 LAN_X_SET_STOP
+     */
+    void LanSetStop();
 
     /**
      * 2.16 LAN_SET_BROADCASTFLAGS

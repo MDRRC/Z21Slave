@@ -149,6 +149,17 @@ void Z21Slave::LanSetTrackPowerOn()
 
 /***********************************************************************************************************************
  */
+void Z21Slave::LanSetStop()
+{
+    uint8_t DataTx[1];
+
+    DataTx[0] = 0x80;
+
+    ComposeTxMessage(0x40, DataTx, 1, true);
+}
+
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanSetBroadCastFlags(uint32_t Flags)
 {
     uint8_t DataTx[4];
@@ -404,6 +415,7 @@ Z21Slave::dataType Z21Slave::DecodeRxMessage(const uint8_t* RxData, uint16_t RxL
         case 0x64: dataReturn = GetCVData(RxData); break;
         case 0xF3: dataReturn = unknown; break;
         case 0xEF: dataReturn = ProcessGetLocInfo(RxData); break;
+        case 0x81: dataReturn = emergencyStop; break;
         }
     }
 
@@ -448,6 +460,7 @@ Z21Slave::dataType Z21Slave::TrackPower(const uint8_t* RxData)
 
     switch (RxData[6])
     {
+    case 0x01: dataReturn = emergencyStop; break;
     case 0x00: dataReturn = trackPowerOn; break;
     case 0x20: dataReturn = programmingMode; break;
     default: dataReturn = trackPowerOff; break;
