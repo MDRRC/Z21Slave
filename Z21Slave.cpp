@@ -398,7 +398,7 @@ Z21Slave::dataType Z21Slave::DecodeRxMessage(const uint8_t* RxData, uint16_t RxL
 
     if (RxData[5] == 0xF1)
     {
-        if ((RxData[4] >= 0xE6) && (RxData[4] <= 0xEF))
+        if ((RxData[4] >= 0xE5) && (RxData[4] <= 0xEF))
         {
             /* Received loc library data, see
              * https://www.open4me.de/index.php/2017/06/zz21-wlan-maus-lok-bibliothek-befehle/  */
@@ -423,14 +423,28 @@ Z21Slave::dataType Z21Slave::DecodeRxMessage(const uint8_t* RxData, uint16_t RxL
 }
 
 /***********************************************************************************************************************
- * Locomotive name is skipped (for now).
+ * Decode the library data.
  */
 Z21Slave::dataType Z21Slave::ProcessLocLibraryData(const uint8_t* RxData)
 {
+    uint8_t NameLength;
+
     m_locLibData.Address = (uint16_t)(RxData[6]) << 8;
     m_locLibData.Address |= RxData[7];
     m_locLibData.Actual = RxData[8];
     m_locLibData.Total  = RxData[9];
+
+    memset(m_locLibData.NameStr, '\0', sizeof(m_locLibData.NameStr));
+
+    NameLength = RxData[4] - 0xE5;
+    if (NameLength > 0)
+    {
+        if (NameLength > 10)
+        {
+            NameLength = 10;
+        }
+        memcpy(m_locLibData.NameStr, &RxData[10], NameLength);
+    }
 
     return (locLibraryData);
 }

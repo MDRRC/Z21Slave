@@ -130,7 +130,7 @@ public:
     struct locLibData
     {
         uint16_t Address;
-        char NameStr[10];
+        char NameStr[11];
         uint16_t Actual;
         uint16_t Total;
     };
