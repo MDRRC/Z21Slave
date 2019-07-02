@@ -277,6 +277,36 @@ Z21Slave::locLibData* Z21Slave::LanXLocLibData() { return (&m_locLibData); }
 
 /***********************************************************************************************************************
  */
+void Z21Slave::LanXLocLibDataTransmit(uint16_t Address, uint8_t Index, uint8_t NrOfLocs, char* NamePtr)
+{
+    uint8_t DataTx[14];
+    uint8_t CopyLength = 0;
+
+    DataTx[1] = 0xf1;
+    DataTx[2] = (Address >> 8) & 0xFF;
+    DataTx[3] = (Address)&0xFF;
+    DataTx[4] = Index;
+    DataTx[5] = NrOfLocs;
+
+    // Limit length if required and copy name
+    if (strlen(NamePtr) > 8)
+    {
+        CopyLength = 8;
+    }
+    else
+    {
+        CopyLength = static_cast<uint8_t>(strlen(NamePtr));
+    }
+    memcpy(&DataTx[6], NamePtr, CopyLength);
+
+    // Set message length and transmit.
+    DataTx[0] = 0xe5 + CopyLength;
+
+    ComposeTxMessage(0x40, DataTx, 6 + CopyLength, true);
+}
+
+/***********************************************************************************************************************
+ */
 void Z21Slave::LanXSetTurnout(uint16_t Address, turnout direction)
 {
     uint8_t DataTx[4];

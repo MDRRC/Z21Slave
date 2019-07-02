@@ -235,6 +235,11 @@ public:
     void LanXCvPomWriteByte(uint16_t Address, uint16_t CvNumber, uint8_t CvValue);
 
     /**
+     * x.x LAN_X_LOC_LIB_DATA_TRANSMIT
+     */
+    void LanXLocLibDataTransmit(uint16_t Address, uint8_t Index, uint8_t NrOfLocs, char *NamePtr);
+
+    /**
      * x.x LAN_X_LOC_LIB_DATA
      */
     locLibData* LanXLocLibData();
