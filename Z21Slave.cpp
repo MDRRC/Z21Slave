@@ -317,9 +317,10 @@ void Z21Slave::LanXSetTurnout(uint16_t Address, turnout direction)
 
     switch (direction)
     {
-    case directionOff: DataTx[3] = 0x80; break;
     case directionTurn: DataTx[3] = 0x88; break;
+    case directionTurnOff: DataTx[3] = 0x80; break;
     case directionForward: DataTx[3] = 0x89; break;
+    case directionForwardOff: DataTx[3] = 0x81; break;
     }
 
     ComposeTxMessage(0x40, DataTx, 4, true);

@@ -96,9 +96,10 @@ public:
      */
     enum turnout
     {
-        directionOff = 0,
-        directionForward,
-        directionTurn
+        directionForward = 0,
+        directionForwardOff,
+        directionTurn,
+        directionTurnOff,
     };
 
     /**
@@ -237,7 +238,7 @@ public:
     /**
      * x.x LAN_X_LOC_LIB_DATA_TRANSMIT
      */
-    void LanXLocLibDataTransmit(uint16_t Address, uint8_t Index, uint8_t NrOfLocs, char *NamePtr);
+    void LanXLocLibDataTransmit(uint16_t Address, uint8_t Index, uint8_t NrOfLocs, char* NamePtr);
 
     /**
      * x.x LAN_X_LOC_LIB_DATA
