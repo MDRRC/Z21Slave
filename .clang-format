@@ -1,0 +1,7 @@
+BasedOnStyle: WebKit
+BreakBeforeBraces: Allman
+AlignTrailingComments: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: true
+AlignConsecutiveAssignments: true
+ColumnLimit: 120
